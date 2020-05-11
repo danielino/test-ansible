@@ -16,8 +16,8 @@
       register: _stat
       loop: "{{ files }}"
 
-    - name: Example assertion
+    - name: Check files
       assert:
         that:
-          - "{{ item }}.stat.exists "
+          - "{{ item.stat.exists }} | bool and {{ item.stat.isreg }} | bool"
       loop: "{{ _stat.results }}"
