@@ -1,0 +1,23 @@
+---
+# This is an example playbook to execute Ansible tests.
+
+- name: Verify
+  hosts: all
+  vars:
+    files:
+      - /tmp/ca.crt
+      - /tmp/ca.key
+      - /tmp/server.crt
+      - /tmp/server.key
+  tasks:
+    - name: stat files
+      stat:
+        path: "{{ item }}"
+      register: _stat
+      loop: "{{ files }}"
+
+    - name: Example assertion
+      assert:
+        that:
+          - "{{ item }}.stat.exists "
+      loop: "{{ _stat.results }}"

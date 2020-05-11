@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include certificate-maker"
+      include_role:
+        name: "certificate-maker"

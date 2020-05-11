@@ -1,0 +1,6 @@
+api_token: "" # api token for digitalocean
+region_id: fra1
+size_id: s-4vcpu-8gb
+image_id: centos-7-x64
+ssh_keys: []
+  # [SSH_KEY_IDS]

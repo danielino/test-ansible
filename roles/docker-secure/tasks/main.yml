@@ -1,0 +1,9 @@
+---
+# tasks file for docker-secure
+
+- name: assert
+  assert:
+    that:
+      - ca_file is defined
+      - crt_file is defined
+      - key_file is defined

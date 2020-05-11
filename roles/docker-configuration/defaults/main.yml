@@ -1,0 +1,11 @@
+---
+# defaults file for docker-configuration
+
+yum_packages:
+  - lvm2
+
+lvm_vg: docker
+lvm_lv: lv00
+lvm_device: /dev/sda
+lvm_device_fstype: xfs
+lvm_device_mountpath: /var/lib/docker

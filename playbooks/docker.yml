@@ -1,0 +1,12 @@
+- hosts: docker
+  roles:
+    - docker-configuration
+    - geerlingguy.docker
+    - docker-swarm
+
+  tasks:
+    - name: create certificate
+      include_role:
+        name: certificate-maker
+      run_once: true
+      delegate_to: localhost

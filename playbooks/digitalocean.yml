@@ -1,0 +1,98 @@
+- name: digitalocean droplet
+  hosts: localhost
+  vars_files:
+    - ../vars/digitalocean.yml
+  vars:
+    state: present
+
+  module_defaults:
+    digital_ocean_droplet:
+      ssh_keys: "{{ ssh_keys }}"
+      oauth_token: "{{ api_token }}"
+      image: "{{ image_id }}"
+      region: "{{ region_id }}"
+      size: "{{ size_id }}"
+      unique_name: yes
+
+    digital_ocean_tag:
+      api_token: "{{ api_token }}"
+
+    digital_ocean_block_storage:
+      api_token: "{{ api_token }}"
+      region: "{{ region_id }}"
+
+  tasks:
+    - name: assert
+      assert:
+        that:
+          - state in ['present', 'absent']
+
+    - name: set fact
+      set_fact:
+        action: "{% if state == 'present' %}Create{% else %}Delete{% endif %}"
+
+    - name: "Create volume"
+      when: "state == 'present'"
+      digital_ocean_block_storage:
+        state: "{{ state }}"
+        command: create
+        block_size: 40
+        volume_name: "{{ item }}"
+      register: _volumes
+      loop:
+        - dkr-vol01
+        - dkr-vol02
+
+    - name: "{{ action }} docker manager machine"
+      digital_ocean_droplet:
+        state: "{{ state }}"
+        name: "{{ item }}"
+      loop:
+        - dkr-01
+        - dkr-02
+      register: _managers
+      ignore_errors: true
+      tags:
+        - vm
+
+    - name: debug
+      debug:
+        var: _managers.results
+
+    - name: "Attach volume"
+      when: "state == 'present'"
+      digital_ocean_block_storage:
+        state: "{{ state }}"
+        command: attach
+        block_size: 40
+        volume_name: "{{ item.volume }}"
+        droplet_id: "{{ item.droplet }}"
+      register: _volumes
+      tags:
+        - volume
+      loop:
+        - droplet: "{{ _managers.results[0].data.droplet.id }}"
+          volume: dkr-vol01
+        - droplet: "{{ _managers.results[1].data.droplet.id }}"
+          volume: dkr-vol02
+
+    - name: "Delete volume"
+      when: "state == 'absent'"
+      digital_ocean_block_storage:
+        state: "absent"
+        command: create
+        block_size: 40
+        volume_name: "{{ item }}"
+      loop:
+        - dkr-01-vol01
+        - dkr-02-vol01
+
+    - name: "{{ action }} droplet tag"
+      when: state == 'present'
+      digital_ocean_tag:
+        name: "docker"
+        state: "{{ state }}"
+        resource_id: "{{ item.data.droplet.id }}"
+      loop: "{{ _managers.results }}"
+      tags:
+        - vm

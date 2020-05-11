@@ -1,0 +1,47 @@
+- name: prerequisites
+  hosts: all
+  tags:
+    - prereq
+  tasks:
+    - name: add dependencies
+      yum:
+        name:
+          - wget
+          - curl
+          - epel-release
+          - gcc
+          - make
+          - libstdc++
+          - kernel-devel
+          - openssl-devel
+          - python-devel
+        state: installed
+
+    - name: install pip
+      yum:
+        name: python2-pip
+        state: installed
+
+    - name: remove python-requests
+      yum:
+        name: python-requests
+        state: absent
+
+    - name: update pip
+      pip:
+        name: pip
+        state: latest
+
+    - name: install python packages
+      pip:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - ansible
+        - docker
+        - docker-compose
+
+    - name: disable selinux
+      selinux:
+        policy: targeted
+        state: permissive
