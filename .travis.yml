@@ -19,11 +19,16 @@ install:
   - cp vars/digitalocean.yml.sample vars/digitalocean.yml
   - sed -i "s/api_token.+/$DO_API_TOKEN/g" vars/digitalocean.yml
   - sed -i "s/ssh_keys.+/ssh_keys:\n  - $DO_SSH_KEY_ID/g" vars/digitalocean.yml
+  - export DO_API_TOKEN
 
 script:
+  # syntax-check and linting
   - ansible-playbook -i inventory.do playbooks/site.yml --syntax-check
   - ansible-lint playbooks/
   - ansible-lint roles/
+  # molecule test
   - cd roles/docker-configuration ; molecule test && cd - || exit 1
-  - ansible-playbook -i inventory.do playbooks/site.yml
-  - ansible-playbook -i inventory.do playbooks/digitalocean.yml -e state=absent
+  # deploy
+  # @TODO: api_key doesn't work with environment variable from travis-ci
+  - DO_API_KEY=$DO_API_TOKEN ansible-playbook -i inventory.do playbooks/site.yml
+  - DO_API_KEY=$DO_API_TOKEN ansible-playbook -i inventory.do playbooks/digitalocean.yml -e state=absent
