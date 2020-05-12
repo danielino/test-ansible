@@ -84,8 +84,8 @@
         block_size: 40
         volume_name: "{{ item }}"
       loop:
-        - dkr-01-vol01
-        - dkr-02-vol01
+        - dkr-vol01
+        - dkr-vol02
 
     - name: "{{ action }} droplet tag"
       when: state == 'present'
