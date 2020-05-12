@@ -1,5 +1,3 @@
 - geerlingguy.docker
 - src: git+https://github.com/ansible/role-secure-docker-daemon
   scm: git
-- src: git+https://github.com/atosatto/ansible-dockerswarm
-  scm: git

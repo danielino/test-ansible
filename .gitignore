@@ -2,5 +2,4 @@ digital_ocean.ini
 vars/digitalocean.yml
 roles/geerlingguy.docker
 roles/role-secure-docker-daemon
-roles/ansible-dockerswarm
 docker_certs
