@@ -14,6 +14,7 @@ tasks:
 - generate and configure tls certificate to secure dockerd API 
 - add tcp socket listen on tcp 2376 for remote management
 - download certificate bundle for remote access
+- deploy wordpress swarm service
 
 ## setup
 

@@ -13,6 +13,9 @@
     - docker-configuration
 
   tasks:
+    - name: flush handlers
+      meta: flush_handlers
+
     - name: archive master certificates
       archive:
         path:
@@ -90,3 +93,72 @@
         tls_hostname: "{{ inventory_hostname }}"
         name: test-remote
         state: absent
+
+- name: Deploy stack on swarm
+  hosts: docker[0]
+  tags:
+    - deploy
+  module_defaults:
+    docker_swarm_service: &docker_configuration
+      docker_host: "tcp://{{ inventory_hostname }}:2376"
+      ca_cert: "../docker_certs/{{ inventory_hostname }}/.docker/ca.pem"
+      client_cert: "../docker_certs/{{ inventory_hostname }}/.docker/cert.pem"
+      client_key: "../docker_certs/{{ inventory_hostname }}/.docker/key.pem"
+      tls_hostname: "{{ inventory_hostname }}"
+      tls: yes
+      validate_certs: yes
+    docker_network:
+      <<: *docker_configuration
+
+  tasks:
+    - name: create swarm network
+      delegate_to: localhost
+      docker_network:
+        scope: swarm
+        name: internal
+        driver: overlay
+
+    - name: deploy mysql
+      delegate_to: localhost
+      docker_swarm_service:
+        name: mysql
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: wordpress
+          MYSQL_USER: wordpress
+          MYSQL_PASSWORD: wordpress
+        mounts:
+          - source: mysqldata
+            target: /var/lib/mysql
+            type: volume
+        networks:
+          - internal
+
+    - name: deploy wordpress
+      delegate_to: localhost
+      docker_swarm_service:
+        name: wordpress
+        image: wordpress
+        env:
+          WORDPRESS_DB_HOST: mysql
+          WORDPRESS_DB_USER: wordpress
+          WORDPRESS_DB_PASSWORD: wordpress
+          WORDPRESS_DB_NAME: wordpress
+        networks:
+          - internal
+        publish:
+          - mode: host
+            published_port: 8080
+            target_port: 80
+        replicas: 2
+
+    - name: check deployment
+      delegate_to: localhost
+      uri:
+        url: "http://{{ inventory_hostname }}:8080"
+        status_code: 200
+      register: _result
+      until: _result.status == 200
+      retries: 60
+      delay: 5
