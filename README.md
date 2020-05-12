@@ -57,3 +57,15 @@ tasks:
     DO_API_TOKEN=xyz ansible-playbook -i inventory.do playbooks/site.yml
     ```
 
+## Roles Overview
+
+- ansible community role used:
+    - https://github.com/ansible/role-secure-docker-daemon
+    - https://github.com/geerlingguy/ansible-role-docker
+
+
+Role | Description 
+-----|--------------
+volume-configuration | configure /dev/sda as lvm device for /var/lib/docker
+docker-swarm | initialize swarm cluster and join nodes
+docker-configuration | configure docker daemon to use tls certificate and bind on port 2376
