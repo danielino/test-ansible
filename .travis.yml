@@ -1,6 +1,6 @@
 ---
 language: python
-python: "2.7"
+python: "3.7"
 
 services:
   - docker
@@ -13,7 +13,7 @@ addons:
       - python-pip
 
 install:
-  - pip install ansible molecule molecule[docker] docker ansible-lint
+  - pip install ansible==2.9.8 molecule==3.0.4 molecule[docker] docker ansible-lint
   - ansible --version
   - ansible-galaxy install -r roles/requirements.yml
   - cp vars/digitalocean.yml.sample vars/digitalocean.yml

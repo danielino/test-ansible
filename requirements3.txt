@@ -1,0 +1,16 @@
+ansible==2.9.8
+git+https://github.com/eodgooch/dopy@0.4.0#egg=dopy
+certifi==2020.4.5.1
+cffi==1.14.0
+chardet==3.0.4
+cryptography==2.9.2
+docker==4.2.0
+idna==2.9
+Jinja2==2.11.2
+MarkupSafe==1.1.1
+pycparser==2.20
+PyYAML==5.3.1
+requests==2.23.0
+six==1.14.0
+urllib3==1.25.9
+websocket-client==0.57.0
