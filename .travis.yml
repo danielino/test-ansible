@@ -17,9 +17,13 @@ install:
   - ansible --version
   - ansible-galaxy install -r roles/requirements.yml
   - cp vars/digitalocean.yml.sample vars/digitalocean.yml
+  - sed -i "s/api_token.+/$DO_API_TOKEN/g" vars/digitalocean.yml
+  - sed -i "s/ssh_keys.+/ssh_keys:\n  - $DO_SSH_KEY_ID/g" vars/digitalocean.yml
 
 script:
   - ansible-playbook -i inventory.do playbooks/site.yml --syntax-check
   - ansible-lint playbooks/
   - ansible-lint roles/
   - cd roles/docker-configuration ; molecule test && cd - || exit 1
+  - ansible-playbook -i inventory.do playbooks/site.yml
+  - ansible-playbook -i inventory.do playbooks/digitalocean.yml -e state=absent
