@@ -30,5 +30,5 @@ script:
   - cd roles/docker-configuration ; molecule test && cd - || exit 1
   # deploy
   # @TODO: api_key doesn't work with environment variable from travis-ci
-  - DO_API_KEY=$DO_API_TOKEN ansible-playbook -i inventory.do playbooks/site.yml
-  - DO_API_KEY=$DO_API_TOKEN ansible-playbook -i inventory.do playbooks/digitalocean.yml -e state=absent
+  #- DO_API_KEY=$DO_API_TOKEN ansible-playbook -i inventory.do playbooks/site.yml
+  #- DO_API_KEY=$DO_API_TOKEN ansible-playbook -i inventory.do playbooks/digitalocean.yml -e state=absent
