@@ -2,17 +2,6 @@
 - name: Converge
   hosts: all
   tasks:
-    - name: create docker device
-      block:
-        - name: create file
-          shell: "truncate -s1G /test"
-
-        - name: create loop device
-          shell: "losetup -f --show /test"
-          register: out
-
     - name: "Include docker-configuration"
       include_role:
         name: "docker-configuration"
-      vars:
-        lvm_device: "{{ out.stdout_lines | first }}"

@@ -1,9 +1,9 @@
-#- import_playbook: digitalocean.yml
-
-- import_playbook: prereq.yml
+- import_playbook: digitalocean.yml
 
 - hosts: localhost
   tasks:
     - meta: refresh_inventory
+
+- import_playbook: prereq.yml
 
 - import_playbook: docker.yml

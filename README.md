@@ -8,5 +8,5 @@ to create droplet in digitalocean we need to copy `vars/digitalocean.yml.sample`
 ## Run
 
 ```bash
-ansible-playbook -i inventory.do playbooks/site.yml
+DO_API_TOKEN=xyz ansible-playbook -i inventory.do playbooks/site.yml
 ```

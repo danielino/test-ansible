@@ -7,6 +7,8 @@ platforms:
   - name: instance
     image: docker.io/pycontribs/centos:7
     pre_build_image: true
+    groups:
+      - docker
 provisioner:
   name: ansible
 verifier:

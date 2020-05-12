@@ -1,7 +1,5 @@
 - name: prerequisites
   hosts: all
-  tags:
-    - prereq
   tasks:
     - name: add dependencies
       yum:

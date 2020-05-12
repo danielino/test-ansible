@@ -4,6 +4,11 @@
   set_fact:
     first_master_ip: "{{ hostvars[groups['docker'][0]]['ansible_default_ipv4']['address'].split('\n')[0] }}"
 
+- name: assert
+  assert:
+    that:
+      - "first_master_ip is defined and first_master_ip != ''"
+
 - name: init a new swarm
   delegate_to: "{{ first_master_ip }}"
   run_once: true

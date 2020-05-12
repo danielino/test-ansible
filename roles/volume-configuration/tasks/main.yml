@@ -1,0 +1,45 @@
+---
+# tasks file for volume-configuration
+- name: stat device
+  stat:
+    path: "{{ lvm_device }}"
+  register: _lvmdev
+
+- name: assert
+  assert:
+    that:
+      - _lvmdev.stat.exists  and _lvmdev.stat.isblk
+
+- name: install prerequired packages
+  package:
+    name: "{{ yum_packages }}"
+    state: installed
+
+- name: create volume group
+  lvg:
+    vg: "{{ lvm_vg }}"
+    pvs: "{{ lvm_device }}"
+
+- name: create logical volume
+  lvol:
+    vg: "{{ lvm_vg }}"
+    lv: "{{ lvm_lv }}"
+    size: 100%FREE
+  ignore_errors: true
+
+- name: create filesystem
+  filesystem:
+    fstype: "{{ lvm_device_fstype }}"
+    dev: "/dev/mapper/{{ lvm_vg }}-{{ lvm_lv }}"
+
+- name: ensure docker directory exists
+  file:
+    path: "{{ lvm_device_mountpath }}"
+    state: directory
+
+- name: mount device
+  mount:
+    src: "/dev/mapper/{{ lvm_vg }}-{{ lvm_lv }}"
+    path: "{{ lvm_device_mountpath }}"
+    fstype: "{{ lvm_device_fstype }}"
+    state: mounted

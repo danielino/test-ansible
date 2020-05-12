@@ -1,7 +1,12 @@
 ---
 - name: Converge
   hosts: all
+  gather_facts: true
   tasks:
+    - name: debug
+      debug:
+        var: ansible_facts
+
     - name: "Include docker-swarm"
       include_role:
         name: "docker-swarm"

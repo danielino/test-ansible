@@ -1,12 +1,92 @@
 - hosts: docker
   roles:
-    - docker-configuration
+    - volume-configuration
     - geerlingguy.docker
     - docker-swarm
+    - role: role-secure-docker-daemon
+      dds_restart_docker: yes
+      dds_country: IT
+      dds_state: IT
+      dds_locality: ROME
+      dds_organization: example
+      dds_host: "{{ inventory_hostname }}"
+    - docker-configuration
 
   tasks:
-    - name: create certificate
-      include_role:
-        name: certificate-maker
-      run_once: true
+    - name: archive master certificates
+      archive:
+        path:
+          - /root/.docker/
+          - /root/docker_env.sh
+        dest: "/tmp/{{ inventory_hostname }}.zip"
+        format: zip
+
+    - name: create docker certificate directory
+      file:
+        path: ../docker_certs
+        state: directory
       delegate_to: localhost
+      run_once: true
+
+    - name: fetch certificates
+      fetch:
+        src: "/tmp/{{ inventory_hostname }}.zip"
+        dest: ../docker_certs/
+
+    - name: unarchive local dir
+      delegate_to: localhost
+      unarchive:
+        src: "../docker_certs/{{ inventory_hostname }}/tmp/{{ inventory_hostname }}.zip"
+        dest: "../docker_certs/{{ inventory_hostname }}"
+        remote_src: true
+
+    - name: replace path in docker_env.sh
+      delegate_to: localhost
+      replace:
+        path: "../docker_certs/{{ inventory_hostname }}/docker_env.sh"
+        regexp: "~/.docker"
+        replace: "$(dirname $(realpath $0))/.docker"
+
+    - name: debug
+      debug:
+        msg: "to use docker remotely you can run this command: `source docker_certs/{{ inventory_hostname }}/docker_env.sh`"
+
+    - name: test run docker container
+      tags:
+        - test
+      delegate_to: 127.0.0.1
+      docker_container:
+        docker_host: "tcp://{{ inventory_hostname }}:2376"
+        ca_cert: "../docker_certs/{{ inventory_hostname }}/.docker/ca.pem"
+        client_cert: "../docker_certs/{{ inventory_hostname }}/.docker/cert.pem"
+        client_key: "../docker_certs/{{ inventory_hostname }}/.docker/key.pem"
+        tls_hostname: "{{ inventory_hostname }}"
+        tls: yes
+        validate_certs: yes
+        name: test-remote
+        image: centos:7
+        entrypoint: sleep
+        command: infinity
+
+    - name: check if container is running
+      tags:
+        - test
+      shell: docker ps | grep test-remote
+      register: out
+      # wait for 1 minute until container is running
+      until: "'test-remote' in out.stdout"
+      delay: 5
+      retries: 12
+
+    - name: stop and remove test container
+      tags:
+        - test
+      delegate_to: 127.0.0.1
+      docker_container:
+        docker_host: "tcp://{{ inventory_hostname }}:2376"
+        ca_cert: "../docker_certs/{{ inventory_hostname }}/.docker/ca.pem"
+        client_cert: "../docker_certs/{{ inventory_hostname }}/.docker/cert.pem"
+        client_key: "../docker_certs/{{ inventory_hostname }}/.docker/key.pem"
+        tls_hostname: "{{ inventory_hostname }}"
+        name: test-remote
+        state: absent

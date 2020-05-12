@@ -1,46 +1,21 @@
 ---
 # tasks file for docker-configuration
 
-- name: stat device
-  stat:
-    path: "{{ lvm_device }}"
-  register: _lvmdev
-
-- name: assert
-  assert:
-    that:
-      - _lvmdev.stat.exists  and _lvmdev.stat.isblk
-
-- name: install prerequired packages
-  package:
-    name: "{{ yum_packages }}"
-    state: installed
-
-- name: create logical volume
-  lvg:
-    vg: "{{ lvm_vg }}"
-    pvs: "{{ lvm_device }}"
-
-- name: configure partitions
-  lvol:
-    vg: "{{ lvm_vg }}"
-    lv: "{{ lvm_lv }}"
-    size: 100%FREE
-  ignore_errors: true
-
-- name: create filesystem
-  filesystem:
-    fstype: "{{ lvm_device_fstype }}"
-    dev: "/dev/mapper/{{ lvm_vg }}-{{ lvm_lv }}"
-
-- name: ensure docker directory exists
+- name: ensure systemd docker directory exists
   file:
-    path: "{{ lvm_device_mountpath }}"
+    path: /etc/systemd/system/docker.service.d
     state: directory
 
-- name: mount device
-  mount:
-    src: "/dev/mapper/{{ lvm_vg }}-{{ lvm_lv }}"
-    path: "{{ lvm_device_mountpath }}"
-    fstype: "{{ lvm_device_fstype }}"
-    state: mounted
+- name: copy template
+  template:
+    src: override.conf.j2
+    dest: /etc/systemd/system/docker.service.d/override.conf
+  register: _template
+
+- name: restart docker
+  when: _template.changed
+  systemd:
+    name: docker
+    daemon_reload: true
+    state: restarted
+    enabled: true
