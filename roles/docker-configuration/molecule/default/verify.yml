@@ -4,6 +4,27 @@
 - name: Verify
   hosts: all
   tasks:
-  - name: Example assertion
-    assert:
-      that: true
+    - name: package facts
+      package_facts:
+        manager: auto
+
+    - name: service facts
+      service_facts:
+
+    - name: assert
+      assert:
+        that:
+          - "'docker-ce' in ansible_facts.packages"
+          - "'docker.service' in ansible_facts.services"
+          - "ansible_facts.services['docker.service']['state'] == 'running'"
+
+    - name: check docker cli
+      shell: docker ps
+      register: _out
+      changed_when: false
+      failed_when: _out.rc != 0
+
+    - name: check port
+      wait_for:
+        host: "{{ ansible_default_ipv4.address }}"
+        port: 2376

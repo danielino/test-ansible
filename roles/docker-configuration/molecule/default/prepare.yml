@@ -1,0 +1,24 @@
+---
+- name: Prepare
+  hosts: all
+  tasks:
+    - name: setup docker
+      include_role:
+        name: geerlingguy.docker
+
+    - name: setup openssl
+      package:
+        name:
+          - openssl
+        state: installed
+
+    - name: secure docker daemon
+      include_role:
+        name: role-secure-docker-daemon
+      vars:
+        dds_restart_docker: yes
+        dds_country: IT
+        dds_state: IT
+        dds_locality: ROME
+        dds_organization: example
+        dds_host: "{{ ansible_default_ipv4.address }}"

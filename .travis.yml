@@ -15,7 +15,6 @@ addons:
 install:
   - pip install ansible molecule molecule[docker] docker ansible-lint
   - ansible --version
-  #- printf '[defaults]\nroles_path=../' >ansible.cfg
   - ansible-galaxy install -r roles/requirements.yml
   - cp vars/digitalocean.yml.sample vars/digitalocean.yml
 
@@ -23,3 +22,4 @@ script:
   - ansible-playbook -i inventory.do playbooks/site.yml --syntax-check
   - ansible-lint playbooks/
   - ansible-lint roles/
+  - cd roles/docker-configuration ; molecule test && cd - || exit 1
