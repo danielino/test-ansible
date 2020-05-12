@@ -17,6 +17,7 @@ install:
   - ansible --version
   #- printf '[defaults]\nroles_path=../' >ansible.cfg
   - ansible-galaxy install -r roles/requirements.yml
+  - cp vars/digitalocean.yml.sample vars/digitalocean.yml
 
 script:
   - ansible-playbook -i inventory.do playbooks/site.yml --syntax-check
