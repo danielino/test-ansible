@@ -6,7 +6,7 @@ chardet==3.0.4
 cryptography==2.9.2
 docker==4.2.0
 idna==2.9
-Jinja2==2.11.2
+Jinja2==2.11.3
 MarkupSafe==1.1.1
 pycparser==2.20
 PyYAML==5.3.1
